@@ -4,9 +4,9 @@
 
 ** DONE Получать сырые данные с esp
 ** DONE Обработка данных
-** TODO Рисование шумов =satellite.nse=
-** TODO Вывод времени и возможно поднять свой ntp
-** TODO git + docker-compose
+** DONE Рисование шумов =satellite.nse=
+** DONE Вывод времени и возможно поднять свой ntp
+** TODO gitlab + docker-compose
 ** TODO Рисование местопололжения спутника ?wait for answer?
 
 

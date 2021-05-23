@@ -61,28 +61,28 @@ def add_gsv(to, data):
 			"prn": int(data.sv_prn_num_1),
 			"deg": int(data.elevation_deg_1),
 			"azm": int(data.azimuth_1),
-			"nse": int(data.snr_1),
+			"nse": (int(data.snr_1) if data.snr_1 else 0),
 		})
 	if (int(data.num_sv_in_view) > len(to)):
 		to.append({
 			"prn": int(data.sv_prn_num_2),
 			"deg": int(data.elevation_deg_2),
 			"azm": int(data.azimuth_2),
-			"nse": int(data.snr_2),
+			"nse": (int(data.snr_2) if data.snr_2 else 0),
 		})
 	if (int(data.num_sv_in_view) > len(to)):
 		to.append({
 			"prn": int(data.sv_prn_num_3),
 			"deg": int(data.elevation_deg_3),
 			"azm": int(data.azimuth_3),
-			"nse": int(data.snr_3),
+			"nse": (int(data.snr_3) if data.snr_3 else 0),
 		})
 	if (int(data.num_sv_in_view) > len(to)):
 		to.append({
 			"prn": int(data.sv_prn_num_4),
 			"deg": int(data.elevation_deg_4),
 			"azm": int(data.azimuth_4),
-			"nse": int(data.snr_4),
+			"nse": (int(data.snr_4) if data.snr_4 else 0),
 		})
 
 def esp_parse(url, package=''):
@@ -97,7 +97,7 @@ def esp_parse(url, package=''):
 	if (package == ''):
 		res = requests.get(url)
 		if (not res):
-			return ({"success": False});
+			return ({});
 		package = res.text
 	for line in package.splitlines():
 		try:
@@ -108,13 +108,11 @@ def esp_parse(url, package=''):
 				time = data.timestamp
 			if isinstance(data, pynmea2.GSV):
 				add_gsv(sv, data)
-				print(repr(data))
 		except pynmea2.ParseError as e:
 			continue
 	return ({
 		"satellites": sv,
 		"time": str(time),
-		"success": True,
 		"receiver": receiver,
 	})
 

@@ -3,35 +3,73 @@ from app.trajectory import *
 from app.esp import *
 
 esp_addr = '';
-
+data = {}
 app = Flask(__name__, 
-            static_url_path='', 
-            static_folder='static',
-            template_folder="templates")
+			static_url_path='', 
+			static_folder='static',
+			template_folder="templates")
 
 @app.route('/esp')
 def esp():
-    return esp_simulation()
+	return esp_simulation()
 
 @app.route('/api/esp')
 def api_esp():
-    return jsonify(esp_parse(esp_addr))
+	global data
+	data = esp_parse(esp_addr)
+	return jsonify(data)
+
+
+
+@app.route('/time')
+def time():
+	global data
+	data = esp_parse(esp_addr)
+	return render_template('time.html', time=data['time'])
+
+
 
 @app.route('/api/tracking/<int:prn>')
 def api_tracking_prn(prn):
-    return jsonify(trajectory.get_trajectory(prn))
+	global data
+	data = trajectory.get_trajectory(prn)
+	return jsonify(data)
 
 @app.route('/tracking/<int:prn>')
 def tracking_prn(prn):
-    return render_template('tracking.html', prn=prn)
-
-@app.route('/api/tracking')
-def api_tracking():
-    return "json list of sattelites" # TODO
+	return render_template('tracking.html', prn=prn)
 
 @app.route('/tracking')
 def tracking():
-    return "table of sattelites" # TODO
+	global data
+	if (not data):
+		data = esp_parse(esp_addr)
+	return render_template('tracking_menu.html', stl=data['satellites'])
+
+
+
+@app.route('/api/noise/<int:prn>')
+def api_noise_prn(prn):
+	global data
+	if (not data):
+		data = esp_parse(esp_addr)
+	for st in data['satellites']:
+		if (st['prn'] == prn):
+			return str(st['nse'])
+	return '0';
+
+@app.route('/noise/<int:prn>')
+def noise_prn(prn):
+	return render_template('noise.html', prn=prn)
+
+@app.route('/noise')
+def noise():
+	global data
+	if (not data):
+		data = esp_parse(esp_addr)
+	return render_template('noise_menu.html', stl=data['satellites'])
+
+
 
 @app.route('/settings', methods = ['POST', 'GET'])
 def settings():

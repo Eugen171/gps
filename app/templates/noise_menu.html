@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <link href="/css/style.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+    <h2>Noise</h2>
+    <center>
+        {% for s in stl %}
+            <a href="/noise/{{s.prn}}">prn {{s.prn}}</a><br>
+        {% endfor %}
+    </center>
+</body>
+</html>
