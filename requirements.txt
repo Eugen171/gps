@@ -1,0 +1,13 @@
+ephem==3.7.7.1
+Flask==2.0.0
+pynmea2==1.18.0
+spacetrack==0.16.0
+pymap3d==2.6.1
+chardet==4.0.0
+Jinja2==3.0.1
+MarkupSafe==2.0.1
+requests==2.25.1
+urllib3==1.26.4
+Werkzeug==2.0.1
+jsonschema==3.2.0
+numpy==1.20.3

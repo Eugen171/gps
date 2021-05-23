@@ -1,7 +1,6 @@
 import ephem
 import numpy as np
 import math
-import matplotlib.pyplot as plt
 import spacetrack.operators as op
 
 from datetime import datetime, date, timedelta
