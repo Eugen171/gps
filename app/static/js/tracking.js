@@ -1,7 +1,7 @@
-var map = L.map('map', {minZoom: 1, maxZoom: 1, scrollWheelZoom: false});
+var map = L.map('map', {minZoom: 1, maxZoom: 18});
 
 var realtime = L.realtime(function(success, error) {
-    fetch('/api/tracking/' + prn)
+    fetch('/api/tracking')
     .then(function(response) { return response.json(); })
     .then(function(data) {
         console.log(data);

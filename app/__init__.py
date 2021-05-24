@@ -34,7 +34,7 @@ def api_tracking_prn():
 	global data
 	if (not data):
 		data = esp_parse(esp_addr)
-	ans = trajectory.get_trajectory(data, prn)
+	ans = trajectory.get_trajectory(data)
 	return jsonify(ans)
 
 @app.route('/tracking')

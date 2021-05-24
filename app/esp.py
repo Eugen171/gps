@@ -111,8 +111,8 @@ def esp_parse(url, package=''):
 		except pynmea2.ParseError as e:
 			continue
 	for s in sv:
-		aer = (s["azm"], s["deg"], 1673)
-		obslla = (rec["lat"], rec["lon"], 8876.8)
+		aer = (s["azm"], s["deg"], 1300000)
+		obslla = (rec["lat"], rec["lon"], 10000)
 		lla = pm.aer2geodetic(*aer, *obslla)
 		sl.append({"prn": s["prn"], "nse": s["nse"],
 					"lat": lla[0], "lon": lla[1]})
