@@ -94,6 +94,7 @@ def esp_parse(url, package=''):
 		url = "localhost:3000/esp"
 	if ('http://' not in url):
 		url = 'http://' + url
+	print(url);
 	if (package == ''):
 		res = requests.get(url)
 		if (not res):
