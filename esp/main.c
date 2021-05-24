@@ -35,6 +35,10 @@ char *get_raw_nmea(char *buffer){
 			i = 0;
 			buffer[0] = '$';
 		}
+		if (i > 2000) {
+			buffer[0] = 0;
+			return (buffer);
+		}
 		++i;
 	}
 	while (prev_line_start == 0
