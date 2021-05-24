@@ -1,14 +1,14 @@
 #ifdef ESP32
- #include <WiFi.h>
- #include <ESPAsyncWebServer.h>
- #include <SPIFFS.h>
+	#include <WiFi.h>
+	#include <ESPAsyncWebServer.h>
+	#include <SPIFFS.h>
 #else
- #include <Arduino.h>
- #include <ESP8266WiFi.h>
- #include <Hash.h>
- #include <ESPAsyncTCP.h>
- #include <ESPAsyncWebServer.h>
- #include <FS.h>
+	#include <Arduino.h>
+	#include <ESP8266WiFi.h>
+	#include <Hash.h>
+	#include <ESPAsyncTCP.h>
+	#include <ESPAsyncWebServer.h>
+	#include <FS.h>
 #endif
 #include <Wire.h>
 #include <SoftwareSerial.h>
@@ -30,7 +30,6 @@ char *get_raw_nmea(char *buffer){
 	i = 0;
 	while (i != 6 || strncmp(buffer, "$GPGGA", 6) != 0) {
 		buffer[i] = mySerial.read();
-		Serial.write(buffer[i]);
 		if (buffer[i] == '$') {
 			i = 0;
 			buffer[0] = '$';
@@ -46,7 +45,6 @@ char *get_raw_nmea(char *buffer){
 		|| strncmp(&buffer[prev_line_start], "$GPGGA", 6) != 0)
 	{
 		buffer[i] = mySerial.read();
-		Serial.write(buffer[i]);
 
 		if (buffer[i] == '$')
 			prev_line_start = i;
