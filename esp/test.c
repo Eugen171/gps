@@ -38,4 +38,3 @@ int main()
 	printf("%s\n\n", get_raw_nmea(f));
 	fclose(f);
 }
-
