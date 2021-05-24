@@ -8,7 +8,7 @@ char *get_raw_nmea(FILE *f)
 {
 	// gpgsa is begining
 	int i;
-	int prev_line_start = -10;
+	int prev_line_start = 0;
 	char *buffer = (char *)malloc(sizeof(char) * BUF_SIZE);
 
 	i = 0;
@@ -20,7 +20,10 @@ char *get_raw_nmea(FILE *f)
 		}
 		++i;
 	}
-	while (i - prev_line_start != 6 || strncmp(&buffer[prev_line_start], "$GPGGA", 6) != 0) {
+	while (prev_line_start == 0
+		|| i - prev_line_start != 6
+		|| strncmp(&buffer[prev_line_start], "$GPGGA", 6) != 0)
+	{
 		buffer[i] = fgetc(f);
 		if (buffer[i] == '$')
 			prev_line_start = i;
