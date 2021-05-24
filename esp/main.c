@@ -30,6 +30,7 @@ char *get_raw_nmea(char *buffer){
 	i = 0;
 	while (i != 6 || strncmp(buffer, "$GPGGA", 6) != 0) {
 		buffer[i] = mySerial.read();
+		Serial.write(buffer[i]);
 		if (buffer[i] == '$') {
 			i = 0;
 			buffer[0] = '$';
@@ -45,6 +46,7 @@ char *get_raw_nmea(char *buffer){
 		|| strncmp(&buffer[prev_line_start], "$GPGGA", 6) != 0)
 	{
 		buffer[i] = mySerial.read();
+		Serial.write(buffer[i]);
 
 		if (buffer[i] == '$')
 			prev_line_start = i;
