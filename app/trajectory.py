@@ -78,7 +78,25 @@ def create_orbital_track(sat_id, step_minutes):
 	}
 
 
-def get_trajectory(prn):
+def get_trajectory(data, prn):
 	# TODO get norad by prn and paste here --+
 	#                          v-------------+
-	return create_orbital_track(prn, 5)
+	# return create_orbital_track(prn, 5)
+	features = []
+	for s in data.satellites:
+		features.append({
+			"type": "Feature",
+			"properties": {},
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					s["lat"],
+					s["lon"],
+				],
+			},
+		})
+
+	return {
+		"type": "FeatureCollection",
+		"features": features,
+	}

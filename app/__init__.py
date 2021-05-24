@@ -29,22 +29,21 @@ def time():
 
 
 
-@app.route('/api/tracking/<int:prn>')
-def api_tracking_prn(prn):
+@app.route('/api/tracking')
+def api_tracking_prn():
 	global data
-	data = trajectory.get_trajectory(prn)
-	return jsonify(data)
-
-@app.route('/tracking/<int:prn>')
-def tracking_prn(prn):
-	return render_template('tracking.html', prn=prn)
+	if (not data):
+		data = esp_parse(esp_addr)
+	ans = trajectory.get_trajectory(data, prn)
+	return jsonify(ans)
 
 @app.route('/tracking')
 def tracking():
 	global data
 	if (not data):
 		data = esp_parse(esp_addr)
-	return render_template('tracking_menu.html', stl=data['satellites'])
+	#return render_template('tracking_menu.html', stl=data['satellites'])
+	return render_template('tracking.html')
 
 
 

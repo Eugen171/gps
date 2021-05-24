@@ -88,8 +88,8 @@ def add_gsv(to, data):
 def esp_parse(url, package=''):
 	sv = []
 	sl = []
+	rec = {}
 	time = ''
-	receiver = ''
 	if (url == ''):
 		url = "localhost:3000/esp"
 	if ('http://' not in url):
@@ -103,33 +103,21 @@ def esp_parse(url, package=''):
 		try:
 			data = pynmea2.parse(line)
 			if isinstance(data, pynmea2.GGA):
-				receiver = {"lat": float(data.lat) / 100, "lon": float(data.lon) / 100}
+				rec = {"lat": float(data.lat) / 100, "lon": float(data.lon) / 100}
 			if isinstance(data, pynmea2.RMC):
 				time = data.timestamp
 			if isinstance(data, pynmea2.GSV):
 				add_gsv(sv, data)
 		except pynmea2.ParseError as e:
 			continue
-	return ({
-		"satellites": sv,
-		"time": str(time),
-		"receiver": receiver,
-	})
-
-if __name__ == '__main__':
-	res = esp_parse('addr', dataarr[0])
-	i = 0
-	for i in range(0, len(res["satellites"])):
-		print(i)
-		print(res["satellites"][i])
-		print(res["receiver"])
-		az = res["satellites"][i]["azm"]
-		el = res["satellites"][i]["deg"]
-		obs_lat = res["receiver"]["lat"]
-		obs_lon = res["receiver"]["lon"]
-		aer = (az, el, 1673)
-		obslla = (obs_lat, obs_lon, 8876.8)
+	for s in sv:
+		aer = (s["azm"], s["deg"], 1673)
+		obslla = (rec["lat"], rec["lon"], 8876.8)
 		lla = pm.aer2geodetic(*aer, *obslla)
-		print(lla[1])
-		print(lla[0])
-		print('')
+		sl.append({"prn": s["prn"], "nse": s["nse"],
+					"lat": lla[0], "lon": lla[1]})
+	return ({
+		"satellites": sl,
+		"time": str(time),
+		"rec": rec,
+	})
