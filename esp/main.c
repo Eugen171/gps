@@ -1,4 +1,4 @@
-#include #ifdef ESP32
+#ifdef ESP32
  #include <WiFi.h>
  #include <ESPAsyncWebServer.h>
  #include <SPIFFS.h>
@@ -11,7 +11,7 @@
  #include <FS.h>
 #endif
 #include <Wire.h>
-#include <SoftwareSerial.h><Wire.h>
+#include <SoftwareSerial.h>
 
 const char* ssid = "Keenetic-7343";
 const char* password = "pwaMMmmE";
