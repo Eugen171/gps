@@ -22,7 +22,7 @@ char *get_raw_nmea(FILE *f)
 	}
 	while (prev_line_start == 0
 		|| i - prev_line_start != 6
-		|| strncmp(&buffer[prev_line_start], "$GPGGA", 6) != 0)
+		|| strncmp(	&buffer[prev_line_start], "$GPGGA", 6) != 0)
 	{
 		buffer[i] = fgetc(f);
 		if (buffer[i] == '$')
