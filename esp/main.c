@@ -1,4 +1,15 @@
-#ifdef ESP32
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ajoie <ajoie@student.42.fr>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/05/28 12:56:42 by ajoie             #+#    #+#             */
+/*   Updated: 2021/05/28 14:57:10 by ajoie            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 	#include <WiFi.h>
 	#include <ESPAsyncWebServer.h>
 	#include <SPIFFS.h>
@@ -23,36 +34,23 @@ AsyncWebServer server(80);
 SoftwareSerial mySerial(D4, D3); //Rx, Tx 
 
 char *get_raw_nmea(char *buffer){
-	// gpgsa is begining
-	int i;
-	int prev_line_start = 0;
+	char *start = buffer;
+	char *ptr = buffer;
 
-	i = 0;
-	while (i != 6 || strncmp(buffer, "$GPGGA", 6) != 0) {
-		buffer[i] = mySerial.read();
-		Serial.write(buffer[i]);
-		if (buffer[i] == '$') {
-			i = 0;
-			buffer[0] = '$';
-		}
-		if (i > 2000) {
-			buffer[0] = 0;
-			return (buffer);
-		}
-		++i;
-	}
-	while (prev_line_start == 0
-		|| i - prev_line_start != 6
-		|| strncmp(&buffer[prev_line_start], "$GPGGA", 6) != 0)
-	{
-		buffer[i] = mySerial.read();
-		Serial.write(buffer[i]);
-
-		if (buffer[i] == '$')
-			prev_line_start = i;
-		++i;
-	}
-	buffer[prev_line_start] = 0;
+	do {
+		ptr = start;
+		*start = mySerial.read();
+		while (*start == '$' && ptr - start < 4)
+			*++ptr = mySerial.read();
+	} while (start[4] != 'G');
+	start = ptr;
+	do {
+		if ((*++ptr = mySerial.read()) == '$')
+			start = ptr;
+		while (*start == '$' && ptr - start < 5)
+			*++ptr = mySerial.read();
+	} while (start[4] != 'G');
+	*start = 0;
 	return (buffer);
 }
 
