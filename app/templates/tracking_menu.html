@@ -5,11 +5,22 @@
     <link href="/css/style.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
-    <h2>Tracking</h2>
+	<h2>Tracking</h2>
     <center>
-        {% for s in stl %}
-            <a href="/tracking/{{s.prn}}">prn {{s.prn}}</a><br>
-        {% endfor %}
+        <table>
+            <tr>
+                <td>PRN</td>
+                <td>NORAD</td>
+                <td>LINK</td>
+            </tr>
+            {% for pn in prn_norad %}
+            <tr>
+                <td>{{pn.prn}}</td>
+                <td>{{pn.norad}}</td>
+                <td><a href="/tracking/{{pn.norad}}">/tracking/{{pn.norad}}</a></td>
+            </tr>
+            {% endfor %}
+        </table>
     </center>
 </body>
 </html>

@@ -34,7 +34,7 @@ def api_tracking_prn(norad):
 	return jsonify("data by norad")
 
 @app.route('/tracking/<int:norad>')
-def tracking(norad):
+def tracking_norad(norad):
 	return render_template('tracking.html', norad)
 
 @app.route('/tracking')
@@ -43,7 +43,8 @@ def tracking():
 	if (not data):
 		data = esp_parse(esp_addr)
 	prn_norad = get_norad(data)
-	return render_template('tracking_menu.html', prn_norad)
+	print (prn_norad)
+	return render_template('tracking_menu.html', prn_norad=prn_norad)
 
 
 
@@ -55,7 +56,7 @@ def api_noise_prn(prn):
 	for st in data['satellites']:
 		if (st['prn'] == prn):
 			return str(st['nse'])
-	return '0';
+	return '0'
 
 @app.route('/noise/<int:prn>')
 def noise_prn(prn):
