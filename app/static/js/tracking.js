@@ -1,15 +1,18 @@
-alert("hello");
-
 var map = L.map('map', {minZoom: 1, maxZoom: 18});
+link = '/api/tracking/' + norad;
+console.log(link);
 
 var realtime = L.realtime(function(success, error) {
-	fetch('/api/tracking')
+	console.log(link);
+	fetch(link)
 	.then(function(response) { return response.json(); })
 	.then(function(data) {
 		console.log(data);
 		success(data);
 	})
-	.catch(error);
+	.catch(function(error) {
+		console.log(error.error);
+	});
 }, {
 	interval: 1000 * 60
 }).addTo(map);

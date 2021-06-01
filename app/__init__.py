@@ -1,13 +1,15 @@
-from flask import Flask, render_template, request, redirect, jsonify
+from flask import Flask, render_template, request, redirect, jsonify, after_this_request
+from flask_cors import CORS
 from app.trajectory import *
 from app.esp import *
 
-esp_addr = '';
+esp_addr = ''
 data = {}
 app = Flask(__name__, 
 			static_url_path='', 
 			static_folder='static',
 			template_folder="templates")
+CORS(app)
 
 @app.route('/esp')
 def esp():
@@ -31,11 +33,13 @@ def time():
 
 @app.route('/api/tracking/<int:norad>')
 def api_tracking_prn(norad):
-	return jsonify("data by norad")
+	res = jsonify(get_trajectory(norad))
+	res.headers.add("Access-Control-Allow-Origin", "*")
+	return res
 
 @app.route('/tracking/<int:norad>')
 def tracking_norad(norad):
-	return render_template('tracking.html', norad)
+	return render_template('tracking.html', norad=norad)
 
 @app.route('/tracking')
 def tracking():
@@ -45,29 +49,6 @@ def tracking():
 	prn_norad = get_norad(data)
 	print (prn_norad)
 	return render_template('tracking_menu.html', prn_norad=prn_norad)
-
-
-
-@app.route('/api/noise/<int:prn>')
-def api_noise_prn(prn):
-	global data
-	if (not data):
-		data = esp_parse(esp_addr)
-	for st in data['satellites']:
-		if (st['prn'] == prn):
-			return str(st['nse'])
-	return '0'
-
-@app.route('/noise/<int:prn>')
-def noise_prn(prn):
-	return render_template('noise.html', prn=prn)
-
-@app.route('/noise')
-def noise():
-	global data
-	if (not data):
-		data = esp_parse(esp_addr)
-	return render_template('noise_menu.html', stl=data['satellites'])
 
 
 

@@ -6,7 +6,7 @@ import spacetrack.operators as op
 import requests
 from bs4 import BeautifulSoup
 
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from spacetrack import SpaceTrackClient
 
 username = 'Jhenyaik3d@yandex.ru'
@@ -33,26 +33,34 @@ if __name__ == '__main__':
 		"rec": "rec",
 	}))
 
-def get_spacetrack_tle(sat_id, username, password, latest=False):
+def get_spacetrack_tle(norad, username, password, latest=False):
 	st = SpaceTrackClient(identity=username, password=password)
-	data = st.tle_latest(norad_cat_id=sat_id, orderby='epoch desc', limit=1, format='tle')
+	data = st.tle_latest(norad_cat_id=norad, orderby='epoch desc', limit=1, format='tle')
 	if not data:
 		return 0, 0
 	tle_1 = data[0:69]
 	tle_2 = data[70:139]
 	return tle_1, tle_2
  
-def create_orbital_track(sat_id, step_minutes):
-	# TODO find NORAD id by PRN
-	tle_1, tle_2 = get_spacetrack_tle(sat_id, username, password, True)
+def get_position_in_time(tle_1, tle_2, time):
+	tle_rec = ephem.readtle('GPS', tle_1, tle_2)
+	tle_rec.compute(time)
+	longitude = tle_rec.sublong * 180 / math.pi
+	latitude  = tle_rec.sublat * 180 / math.pi
+	return [longitude, latitude]
+
+
+def create_orbital_track(norad, step_minutes):
+	tle_1, tle_2 = get_spacetrack_tle(norad, username, password, True)
 	if not tle_1 or not tle_2:
 		return ([])
 	num_timestamp = 1440 // 5
 	utc_hh = np.zeros((num_timestamp, 1))
 	utc_mm = np.zeros((num_timestamp, 1))
 	utc_ss = np.zeros((num_timestamp, 1))
+	utc_now = datetime.now(timezone.utc)
 	coordinates = []
-	p = [];
+	prev = []
 
 	i = 0
 	minutes = 0
@@ -64,21 +72,15 @@ def create_orbital_track(sat_id, step_minutes):
 		utc_mm[i] = utc_minutes
 		utc_ss[i] = utc_seconds
 
-		now = datetime.now()
-		utc_string = str(utc_hour) + '-' + str(utc_minutes) + '-' + str(utc_seconds)
-		utc_time = datetime(now.year, now.month, now.day, utc_hour, utc_minutes, utc_seconds)
+		utc_time = datetime(utc_now.year, utc_now.month, utc_now.day, utc_hour, utc_minutes, utc_seconds)
+		loc = get_position_in_time(tle_1, tle_2, utc_time)
 
-		tle_rec = ephem.readtle('GPS', tle_1, tle_2);
-		tle_rec.compute(utc_time);
-
-		longitude = tle_rec.sublong * 180 / math.pi
-		latitude  = tle_rec.sublat * 180 / math.pi
-		n = [longitude, latitude]
-		if (p and n[0] > p[0]):
-			coordinates.append([p, n])
-		p = n;
+		if (prev and loc[0] > prev[0]):
+			coordinates.append([prev, loc])
+		prev = loc
 		i += 1
 		minutes += step_minutes
+
 	return {
 		"type": "FeatureCollection",
 		"features": [
@@ -89,7 +91,7 @@ def create_orbital_track(sat_id, step_minutes):
 				},
 				"geometry": {
 					"type": "Point",
-					"coordinates": [65.390625, 61.60639637138628],
+					"coordinates": get_position_in_time(tle_1, tle_2, utc_now),
 				},
 			},
 			{
@@ -106,27 +108,5 @@ def create_orbital_track(sat_id, step_minutes):
 	}
 
 
-def get_trajectory(data):
-	# TODO get norad by prn and paste here --+
-	#                          v-------------+
-	# return create_orbital_track(prn, 5)
-	features = []
-	for i in range(0, len(data['satellites'])):
-		features.append({
-			"type": "Feature",
-			"properties": {
-				"id": i,
-			},
-			"geometry": {
-				"type": "Point",
-				"coordinates": [
-					data['satellites'][i]["lon"],
-					data['satellites'][i]["lat"],
-				],
-			},
-		})
-
-	return {
-		"type": "FeatureCollection",
-		"features": features,
-	}
+def get_trajectory(norad):
+	return create_orbital_track(norad, 5)
