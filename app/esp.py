@@ -53,53 +53,33 @@ def esp_simulation():
 		i = 0
 	return (dataarr[i])
 
-def add_gsv(to, data):
+def add_prn(to, data):
 	if (not isinstance(data, pynmea2.GSV)):
 		return
 	if (int(data.num_sv_in_view) > len(to)):
-		to.append({
-			"prn": int(data.sv_prn_num_1),
-			"deg": int(data.elevation_deg_1),
-			"azm": int(data.azimuth_1),
-			"nse": (int(data.snr_1) if data.snr_1 else 0),
-		})
+		to.append(int(data.sv_prn_num_1))
 	if (int(data.num_sv_in_view) > len(to)):
-		to.append({
-			"prn": int(data.sv_prn_num_2),
-			"deg": int(data.elevation_deg_2),
-			"azm": int(data.azimuth_2),
-			"nse": (int(data.snr_2) if data.snr_2 else 0),
-		})
+		to.append(int(data.sv_prn_num_2))
 	if (int(data.num_sv_in_view) > len(to)):
-		to.append({
-			"prn": int(data.sv_prn_num_3),
-			"deg": int(data.elevation_deg_3),
-			"azm": int(data.azimuth_3),
-			"nse": (int(data.snr_3) if data.snr_3 else 0),
-		})
+		to.append(int(data.sv_prn_num_3))
 	if (int(data.num_sv_in_view) > len(to)):
-		to.append({
-			"prn": int(data.sv_prn_num_4),
-			"deg": int(data.elevation_deg_4),
-			"azm": int(data.azimuth_4),
-			"nse": (int(data.snr_4) if data.snr_4 else 0),
-		})
+		to.append(int(data.sv_prn_num_4))
 
 def esp_parse(url, package=''):
-	sv = []
-	sl = []
+	prn = []
 	rec = {}
 	time = ''
+	# get data from esp
 	if (url == ''):
 		url = "localhost:3000/esp"
 	if ('http://' not in url):
 		url = 'http://' + url
-	print(url);
 	if (package == ''):
 		res = requests.get(url)
 		if (not res):
 			return ({});
 		package = res.text
+	# parse raw data
 	for line in package.splitlines():
 		try:
 			data = pynmea2.parse(line)
@@ -108,17 +88,12 @@ def esp_parse(url, package=''):
 			if isinstance(data, pynmea2.RMC):
 				time = data.timestamp
 			if isinstance(data, pynmea2.GSV):
-				add_gsv(sv, data)
+				add_prn(prn, data)
 		except pynmea2.ParseError as e:
 			continue
-	for s in sv:
-		aer = (s["azm"], s["deg"], 1300000)
-		obslla = (rec["lat"], rec["lon"], 10000)
-		lla = pm.aer2geodetic(*aer, *obslla)
-		sl.append({"prn": s["prn"], "nse": s["nse"],
-					"lat": lla[0], "lon": lla[1]})
+
 	return ({
-		"satellites": sl,
+		"prn": prn,
 		"time": str(time),
 		"rec": rec,
 	})

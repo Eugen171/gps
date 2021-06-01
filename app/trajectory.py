@@ -3,13 +3,37 @@ import numpy as np
 import math
 import spacetrack.operators as op
 
+import requests
+from bs4 import BeautifulSoup
+
 from datetime import datetime, date, timedelta
 from spacetrack import SpaceTrackClient
 
 username = 'Jhenyaik3d@yandex.ru'
 password = 'Donttouchthis!7'
 
-def get_spacetrack_tle (sat_id, username, password, latest=False):
+def get_norad(data):
+	out = []
+	html_text = requests.get('https://www.n2yo.com/satellites/?c=20').text
+	soup = BeautifulSoup(html_text, 'lxml')
+	table = soup.find(id='categoriestab')
+	table = table.find_all('tr')[1:-1]
+	for row in table:
+		cols = row.find_all('td')
+		prn = int(cols[5].text)
+		nor = int(cols[1].text)
+		if (prn in data['prn']):
+			out.append({'prn': prn, 'norad': nor})
+	return (out)
+
+if __name__ == '__main__':
+	print (get_norad ({
+		"prn": [14, 23, 18],
+		"time": "time",
+		"rec": "rec",
+	}))
+
+def get_spacetrack_tle(sat_id, username, password, latest=False):
 	st = SpaceTrackClient(identity=username, password=password)
 	data = st.tle_latest(norad_cat_id=sat_id, orderby='epoch desc', limit=1, format='tle')
 	if not data:
