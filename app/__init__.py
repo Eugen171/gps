@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, jsonify, after_this_request
 from flask_cors import CORS
 from app.trajectory import *
+from app.ion import get_ion
 from app.esp import *
 
 esp_addr = ''
@@ -49,6 +50,27 @@ def tracking():
 	prn_norad = get_norad(data)
 	print (prn_norad)
 	return render_template('tracking_menu.html', prn_norad=prn_norad)
+
+
+
+@app.route('/api/ion/<int:norad>')
+def api_ion_prn(norad):
+	res = jsonify(get_ion(norad))
+	res.headers.add("Access-Control-Allow-Origin", "*")
+	return res
+
+@app.route('/ion/<int:norad>')
+def ion_norad(norad):
+	return render_template('ion.html', norad=norad)
+
+@app.route('/ion')
+def ion():
+	global data
+	if (not data):
+		data = esp_parse(esp_addr)
+	prn_norad = get_norad(data)
+	print (prn_norad)
+	return render_template('ion_menu.html', prn_norad=prn_norad)
 
 
 
