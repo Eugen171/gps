@@ -14,7 +14,6 @@
 <script type="text/javascript"> var norad = {{ norad }} </script>
 <script>
 var map = L.map('map', {minZoom: 1, maxZoom: 18});
-alert(norad);
 
 var realtime = L.realtime({
     url: '/api/ion/' + norad,
