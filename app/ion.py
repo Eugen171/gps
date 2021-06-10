@@ -4,26 +4,27 @@ import math
 import spacetrack.operators as op
 from datetime import datetime, date, timedelta, timezone
 from spacetrack import SpaceTrackClient
-from app.trajectory import get_spacetrack_tle, get_position_in_time
+from app.trajectory import get_spacetrack_tle
 
 username = 'Jhenyaik3d@yandex.ru'
 password = 'Donttouchthis!7'
 
-def create_orbital_track(norad, username, password):
-    tle_1, tle_2 = get_spacetrack_tle(norad, username, password, True)
-    if not tle_1 or not tle_2:
-        return ([])
-    num_timestamp = 1440 // 5
+def create_orbital_track_for_day(sat_id, step_minutes, username, password, name, num_timestamp):
+    longitude = np.zeros((num_timestamp,))
+    latitude = np.zeros((num_timestamp,))
+
     utc_hh = np.zeros((num_timestamp, 1))
     utc_mm = np.zeros((num_timestamp, 1))
     utc_ss = np.zeros((num_timestamp, 1))
-    utc_now = datetime.now(timezone.utc)
-    lat = []
-    lon = []
-
+    tle_1, tle_2 = get_spacetrack_tle(sat_id, username, password)
+    if not tle_1 or not tle_2:
+        print('Impossible to retrieve TLE')
+        return
     i = 0
     minutes = 0
-    while minutes < 1440:
+    utc_now = datetime.now(timezone.utc)
+
+    while minutes < 1000:
         utc_hour = int(minutes // 60)
         utc_minutes = int((minutes - (utc_hour * 60)) // 1)
         utc_seconds = int(round((minutes - (utc_hour * 60) - utc_minutes) * 60))
@@ -31,13 +32,17 @@ def create_orbital_track(norad, username, password):
         utc_mm[i] = utc_minutes
         utc_ss[i] = utc_seconds
 
+        utc_string = str(utc_hour) + '-' + str(utc_minutes) + '-' + str(utc_seconds)
         utc_time = datetime(utc_now.year, utc_now.month, utc_now.day, utc_hour, utc_minutes, utc_seconds)
-        loc = get_position_in_time(tle_1, tle_2, utc_time)
-        lon.append(loc[0])
-        lat.append(loc[1])
+        tle_rec = ephem.readtle(name, tle_1, tle_2)
+        tle_rec.compute(utc_time)
+        longitude[i] = tle_rec.sublong * 180 / math.pi
+        latitude[i] = tle_rec.sublat * 180 / math.pi
+
         i += 1
-        minutes += 5
-    return lon, lat
+        minutes += step_minutes
+
+    return longitude, latitude, utc_hh, utc_mm, utc_ss
 
 def psi_s_13(lat, lat_s, lon, lon_s):
     internal = np.sin(lat) * np.sin(lat_s) + np.cos(lat) * np.cos(lat_s) * np.cos(lon_s - lon)
@@ -99,9 +104,10 @@ def find_corresponding_ionosphere_spots(site, latitude, longitude):
 
 
 def create_ion_track(norad):
-    prev = [0, 0]
+    num_timestamp=1000 // 5
+    prev = []
     coordinates = []
-    longitude, latitude = create_orbital_track(norad, username, password)
+    longitude, latitude, utc_hh, utc_mm, utc_ss = create_orbital_track_for_day(norad, 5, username, password, "GPS", num_timestamp)
     kzn = site_class()
     kzn.ID = 'GNSS1'
     kzn.Name = 'Казань'
@@ -112,7 +118,7 @@ def create_ion_track(norad):
 
     for i in range(0, len(ion_sp_lon) - 1):
         loc = [ion_sp_lon[i], ion_sp_lat[i]]
-        if (prev and loc[0] > prev[0]):
+        if (len(prev) != 0):
             coordinates.append([prev, loc])
         prev = loc
 
